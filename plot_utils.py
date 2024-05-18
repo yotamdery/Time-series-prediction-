@@ -6,7 +6,9 @@
 import plotly.express as px
 import plotly.graph_objs as go
 import pandas as pd
+import numpy as np
 from plotly.subplots import make_subplots
+from statsmodels.tsa.stattools import acf
 from pandas import DataFrame
 
 
@@ -139,7 +141,7 @@ def plot_mean_std_plots(df: DataFrame, window_size: int) -> any:
         rolling_stats[f'{feature}_std'] = df[feature].rolling(window=window_size).std()
 
     # Plotting rolling statistics for each feature using Plotly
-    for feature in ['revenue', 'subs', 'spend']:
+    for feature in df.select_dtypes(include='number'):
         fig = go.Figure()
         
         # Add rolling mean to the plot
@@ -160,3 +162,45 @@ def plot_mean_std_plots(df: DataFrame, window_size: int) -> any:
         
         # Show plot
         fig.show()
+
+def plot_acf_plots(df: DataFrame, feature: str) -> any:
+    # Calculate ACF values for the 'spend' column
+    acf_values, confint = acf(df[feature], alpha=0.05)
+
+    # Create the ACF plot
+    fig = go.Figure()
+
+    # Add bars for ACF values
+    fig.add_trace(go.Bar(
+        x=np.arange(len(acf_values)),
+        y=acf_values,
+        name='ACF'
+    ))
+
+    # Add confidence intervals
+    fig.add_trace(go.Scatter(
+        x=np.arange(len(acf_values)),
+        y=confint[:, 0] - acf_values,
+        fill=None,
+        mode='lines',
+        line=dict(color='rgba(255, 0, 0, 0.3)'),
+        showlegend=False
+    ))
+    fig.add_trace(go.Scatter(
+        x=np.arange(len(acf_values)),
+        y=confint[:, 1] - acf_values,
+        fill='tonexty',
+        mode='lines',
+        line=dict(color='rgba(255, 0, 0, 0.3)'),
+        showlegend=False
+    ))
+
+    # Update layout
+    fig.update_layout(
+        title=f'Autocorrelation Function (ACF) Plot for feature {feature.capitalize()}',
+        xaxis_title='Lag',
+        yaxis_title='Autocorrelation',
+        template='plotly_white'
+    )
+
+    fig.show()
