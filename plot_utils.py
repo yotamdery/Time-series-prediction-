@@ -8,7 +8,7 @@ import plotly.graph_objs as go
 import pandas as pd
 import numpy as np
 from plotly.subplots import make_subplots
-from statsmodels.tsa.stattools import acf
+from statsmodels.tsa.stattools import acf, pacf
 from pandas import DataFrame
 
 
@@ -203,4 +203,76 @@ def plot_acf_plots(df: DataFrame, feature: str) -> any:
         template='plotly_white'
     )
 
+    fig.show()
+
+def plot_pacf_plots(df: DataFrame, feature: str) -> any:
+    # Calculate PACF values for the 'spend' column
+    pacf_values, confint = pacf(df[feature], alpha=0.05)
+
+    # Create the PACF plot
+    fig = go.Figure()
+
+    # Add bars for PACF values
+    fig.add_trace(go.Bar(
+        x=np.arange(len(pacf_values)),
+        y=pacf_values,
+        name='PACF'
+    ))
+
+    # Add confidence intervals
+    fig.add_trace(go.Scatter(
+        x=np.arange(len(pacf_values)),
+        y=confint[:, 0] - pacf_values,
+        fill=None,
+        mode='lines',
+        line=dict(color='rgba(255, 0, 0, 0.3)'),
+        showlegend=False
+    ))
+    fig.add_trace(go.Scatter(
+        x=np.arange(len(pacf_values)),
+        y=confint[:, 1] - pacf_values,
+        fill='tonexty',
+        mode='lines',
+        line=dict(color='rgba(255, 0, 0, 0.3)'),
+        showlegend=False
+    ))
+
+    # Update layout
+    fig.update_layout(
+        title=f'Partial Autocorrelation Function (PACF) Plot for {feature}',
+        xaxis_title='Lag',
+        yaxis_title='Partial Autocorrelation',
+        template='plotly_white'
+    )
+
+    fig.show()
+
+
+def create_pred_observed_plot(df, forecasted_values, confidence_intervals, forecast_steps) -> any:
+    # Create the plot
+    fig = go.Figure()
+
+    # Add observed data
+    fig.add_trace(go.Scatter(x=df.index, y=df['revenue_diff'], mode='lines', name='Observed'))
+
+    # Add forecasted data
+    fig.add_trace(go.Scatter(x=forecasted_values.index, y=forecasted_values, mode='lines', name='Forecasted'))
+
+    # Add confidence intervals
+    fig.add_trace(go.Scatter(x=confidence_intervals.index, y=confidence_intervals.iloc[:, 0], fill=None, mode='lines', line_color='lightgrey', name='Lower CI'))
+    fig.add_trace(go.Scatter(x=confidence_intervals.index, y=confidence_intervals.iloc[:, 1], fill='tonexty', mode='lines', line_color='lightgrey', name='Upper CI'))
+
+    # Add vertical line to indicate end of training data
+    fig.add_vline(x=df.index[-forecast_steps], line_dash='dash', line_color='gray')
+
+    # Customize layout
+    fig.update_layout(
+        title='Revenue Forecast',
+        xaxis_title='Month',
+        yaxis_title='Revenue Difference',
+        legend_title='Series',
+        template='plotly_white'
+    )
+
+    # Show the plot
     fig.show()
