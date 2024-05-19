@@ -253,14 +253,14 @@ def create_pred_observed_plot(df, forecasted_values, confidence_intervals, forec
     fig = go.Figure()
 
     # Add observed data
-    fig.add_trace(go.Scatter(x=df.index, y=df['revenue_diff'], mode='lines', name='Observed'))
+    fig.add_trace(go.Scatter(x=df.index, y=df['revenue'], mode='lines', name='Observed'))
 
     # Add forecasted data
     fig.add_trace(go.Scatter(x=forecasted_values.index, y=forecasted_values, mode='lines', name='Forecasted'))
 
     # Add confidence intervals
-    fig.add_trace(go.Scatter(x=confidence_intervals.index, y=confidence_intervals.iloc[:, 0], fill=None, mode='lines', line_color='lightgrey', name='Lower CI'))
-    fig.add_trace(go.Scatter(x=confidence_intervals.index, y=confidence_intervals.iloc[:, 1], fill='tonexty', mode='lines', line_color='lightgrey', name='Upper CI'))
+    # fig.add_trace(go.Scatter(x=confidence_intervals.index, y=confidence_intervals.iloc[:, 0], fill=None, mode='lines', line_color='lightgrey', name='Lower CI'))
+    # fig.add_trace(go.Scatter(x=confidence_intervals.index, y=confidence_intervals.iloc[:, 1], fill='tonexty', mode='lines', line_color='lightgrey', name='Upper CI'))
 
     # Add vertical line to indicate end of training data
     fig.add_vline(x=df.index[-forecast_steps], line_dash='dash', line_color='gray')
