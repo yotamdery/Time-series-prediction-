@@ -16,3 +16,4 @@ XlsxWriter==1.0.5
 statsmodels
 openpyxl
 dataclasses
+pmdarima
